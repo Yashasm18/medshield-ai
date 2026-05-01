@@ -23,11 +23,14 @@ const initializers: ((
   res: Response
 ) => void)[] = [];
 
+import { checkSystemStatusToolInitializer } from "./check-system-status";
+
 initializers.push(getPatientMedicationContextToolInitializer);
 initializers.push(checkDrugInteractionsToolInitializer);
-// initializers.push(analyzeLabTrendsToolInitializer);
-// initializers.push(assessGenomicRiskToolInitializer);
-// initializers.push(crossReferenceAllergiesToolInitializer);
+initializers.push(analyzeLabTrendsToolInitializer);
+initializers.push(assessGenomicRiskToolInitializer);
+initializers.push(crossReferenceAllergiesToolInitializer);
 initializers.push(generateSafetyReportToolInitializer);
+initializers.push(checkSystemStatusToolInitializer);
 
 export { initializers };

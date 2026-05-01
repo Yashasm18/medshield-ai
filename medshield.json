@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "medshield-ai": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {}
+    }
+  },
+  "metadata": {
+    "name": "MedShield AI",
+    "description": "An autonomous, SHARP-compliant MCP agent that prevents adverse drug events by analyzing live FHIR data, OpenFDA interactions, and lab trends to generate real-time clinical safety reports.",
+    "version": "1.0.0",
+    "author": "Yashas",
+    "tools": [
+      "get_patient_medication_context",
+      "check_drug_interactions",
+      "analyze_lab_trends",
+      "assess_genomic_risk",
+      "cross_reference_allergies",
+      "generate_safety_report",
+      "check_system_status"
+    ]
+  }
+}

@@ -1,6 +1,8 @@
 # 🛡️ MedShield AI: Clinical Safety Agent
 
-**MedShield AI** is a production-grade, autonomous clinical safety agent built for the **Agents Assemble Hackathon**. Designed to integrate directly into Electronic Health Records (EHR) via the Prompt Opinion platform, MedShield acts as a real-time safeguard against Adverse Drug Events (ADEs).
+> MedShield AI is an MCP server that gives any LLM agent six clinical safety tools – drug interactions, lab trend analysis, genomic risk, allergy cross-reactivity, medication context, and a safety report – using live FHIR data via SHARP headers, with zero PHI storage.
+
+Designed to integrate directly into Electronic Health Records (EHR) via the Prompt Opinion platform, MedShield acts as a real-time safeguard against Adverse Drug Events (ADEs).
 
 By leveraging the **Model Context Protocol (MCP)** and **SHARP (Secure Healthcare Agent Request Protocol)** headers, the agent securely extracts patient context and orchestrates a suite of specialized clinical tools to generate comprehensive, actionable safety reports.
 
@@ -23,8 +25,21 @@ MedShield AI operates as an **MCP Server** that exposes 6 highly specialized cli
 ## 🔒 Security & SHARP Compliance
 
 Healthcare data security is paramount. MedShield AI strictly adheres to the SHARP specification for secure context propagation:
-- **Zero-Storage Policy**: The server stores *no* Patient Health Information (PHI). Data is processed in-memory during the tool execution context.
+- **Zero-Storage Policy**: No patient health information is ever persisted – all data processed in-memory during tool execution.
 - **Contextual Execution**: Tool access is strictly gated by the presence of `x-fhir-server-url` and `x-fhir-access-token` headers propagated by the parent platform.
+
+### SHARP Header Implementation
+The parent Prompt Opinion platform injects these headers using SHARP extensions. Our server never stores them – it only uses them to fetch live patient data on the fly.
+
+```typescript
+export function getFhirContext(req: Request): FhirContext | null {
+  const serverUrl = req.headers['x-fhir-server-url'] as string;
+  const accessToken = req.headers['x-fhir-access-token'] as string;
+  const patientId = req.headers['x-patient-id'] as string;
+
+  return { url: serverUrl, token: accessToken, patientId };
+}
+```
 
 ---
 

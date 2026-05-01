@@ -6,6 +6,14 @@ import { initializers } from "./src/tools/tools-list";
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Task 1.2: Environment variable validation
+if (!process.env.GEMINI_API_KEY && process.env.NODE_ENV === "production") {
+  console.warn("WARNING: GEMINI_API_KEY is not set. Ensure the parent LLM platform handles generation.");
+}
+if (!process.env.FHIR_SERVER_URL) {
+  console.warn("WARNING: FHIR_SERVER_URL is not set globally. Relying exclusively on SHARP headers for FHIR context.");
+}
+
 app.use(express.json());
 
 // CORS headers for Prompt Opinion platform
