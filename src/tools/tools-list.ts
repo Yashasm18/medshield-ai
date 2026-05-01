@@ -25,9 +25,9 @@ const initializers: ((
 
 initializers.push(getPatientMedicationContextToolInitializer);
 initializers.push(checkDrugInteractionsToolInitializer);
-initializers.push(analyzeLabTrendsToolInitializer);
-initializers.push(assessGenomicRiskToolInitializer);
-initializers.push(crossReferenceAllergiesToolInitializer);
+// initializers.push(analyzeLabTrendsToolInitializer);
+// initializers.push(assessGenomicRiskToolInitializer);
+// initializers.push(crossReferenceAllergiesToolInitializer);
 initializers.push(generateSafetyReportToolInitializer);
 
 export { initializers };

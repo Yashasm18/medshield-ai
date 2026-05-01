@@ -45,11 +45,31 @@ app.get("/health", (_req, res) => {
 
 // MCP endpoint — SHARP-compliant
 app.post("/mcp", async (req, res) => {
+  console.log("=== INCOMING /mcp POST ===");
+  console.log("HEADERS:", JSON.stringify(req.headers, null, 2));
+  console.log("BODY:", JSON.stringify(req.body, null, 2));
   try {
-    const server = new McpServer({
-      name: "MedShield AI",
-      version: "1.0.0",
-    });
+    const server = new McpServer(
+      {
+        name: "MedShield AI",
+        version: "1.0.0",
+      },
+      {
+        capabilities: {
+          extensions: {
+            "ai.promptopinion/fhir-context": {
+              scopes: [
+                { name: "patient/Patient.rs", required: true },
+                { name: "patient/MedicationRequest.rs" },
+                { name: "patient/MedicationStatement.rs" },
+                { name: "patient/Condition.rs" },
+                { name: "patient/AllergyIntolerance.rs" }
+              ]
+            }
+          }
+        }
+      }
+    );
 
     // Register all 6 tools, passing the request for SHARP header extraction
     for (const initializer of initializers) {

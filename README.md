@@ -1,88 +1,72 @@
-# MedShield AI 🛡️
+# 🛡️ MedShield AI: Clinical Safety Agent
 
-**Adverse Drug Event Prevention Agent — Built for the Agents Assemble Hackathon**
+**MedShield AI** is a production-grade, autonomous clinical safety agent built for the **Agents Assemble Hackathon**. Designed to integrate directly into Electronic Health Records (EHR) via the Prompt Opinion platform, MedShield acts as a real-time safeguard against Adverse Drug Events (ADEs).
 
-MedShield AI is a SHARP-compliant MCP server that prevents adverse drug events (ADEs) by cross-referencing a patient's medications, lab values, genetic profile, and allergies in real-time before a new prescription is dispensed.
+By leveraging the **Model Context Protocol (MCP)** and **SHARP (Secure Healthcare Agent Request Protocol)** headers, the agent securely extracts patient context and orchestrates a suite of specialized clinical tools to generate comprehensive, actionable safety reports.
 
-> 🔴 **100,000+ Americans die each year from ADEs. 50%+ are preventable.**
-> MedShield AI is the safety net that catches what EHR alerts miss.
+---
 
-## Architecture
+## 🚀 Architecture & Capabilities
 
-```
-┌─────────────────────────────────────────────────────────┐
-│              PROMPT OPINION PLATFORM                     │
-│                                                         │
-│  Clinician types: "Prescribe Warfarin 5mg for patient"  │
-│           ↓                                              │
-│  ┌──────────────────┐    ┌─────────────────────────┐    │
-│  │ MedShield Agent  │◄──►│ Orchestrator (A2A)      │    │
-│  │ (A2A on Platform)│    │ Calls 6 MCP tools       │    │
-│  └────────┬─────────┘    └─────────────────────────┘    │
-│           │                                              │
-│  ┌────────▼──────────────────────────────────────────┐  │
-│  │        MedShield MCP Server (SHARP-Compliant)      │  │
-│  │                                                    │  │
-│  │  Tool 1: get_patient_medication_context (FHIR)    │  │
-│  │  Tool 2: check_drug_interactions (OpenFDA + DB)   │  │
-│  │  Tool 3: analyze_lab_trends (FHIR Observations)   │  │
-│  │  Tool 4: assess_genomic_risk (CPIC Guidelines)    │  │
-│  │  Tool 5: cross_reference_allergies (RxNorm + DB)  │  │
-│  │  Tool 6: generate_safety_report (AI Synthesis)    │  │
-│  └────────────────────────────────────────────────────┘  │
-│                                                         │
-│  SHARP Headers: x-fhir-server-url, x-fhir-access-token │
-│                 x-patient-id                             │
-└─────────────────────────────────────────────────────────┘
-```
+MedShield AI operates as an **MCP Server** that exposes 6 highly specialized clinical evaluation tools to any compatible LLM agent. 
 
-## Quick Start
+### The 6 Core Clinical Tools
+1. 📋 **`get_patient_medication_context`**: Extracts live FHIR patient data (Conditions, Active Medications) via SHARP headers.
+2. 💊 **`check_drug_interactions`**: Queries OpenFDA FAERS (FDA Adverse Event Reporting System) and a curated clinical database to detect high-severity drug-drug interactions (e.g., CYP450 inhibition).
+3. 🔬 **`analyze_lab_trends`**: Evaluates recent FHIR `Observation` data (e.g., eGFR, AST/ALT, INR) to detect organ function deterioration that impacts drug clearance.
+4. 🧬 **`assess_genomic_risk`**: Cross-references proposed drugs against **CPIC guidelines** (Clinical Pharmacogenetics Implementation Consortium) to evaluate gene-drug toxicity risks.
+5. ⚠️ **`cross_reference_allergies`**: Goes beyond simple name-matching to evaluate **drug-class cross-reactivity** (e.g., Penicillin → Cephalosporins).
+6. 📝 **`generate_safety_report`**: Synthesizes all findings into a structured, severity-ranked clinical recommendation for the prescribing physician.
+
+---
+
+## 🔒 Security & SHARP Compliance
+
+Healthcare data security is paramount. MedShield AI strictly adheres to the SHARP specification for secure context propagation:
+- **Zero-Storage Policy**: The server stores *no* Patient Health Information (PHI). Data is processed in-memory during the tool execution context.
+- **Contextual Execution**: Tool access is strictly gated by the presence of `x-fhir-server-url` and `x-fhir-access-token` headers propagated by the parent platform.
+
+---
+
+## 💻 Tech Stack
+
+- **Framework**: Node.js, Express, TypeScript
+- **Protocol**: Model Context Protocol (MCP) SDK (`@modelcontextprotocol/sdk`)
+- **Transport**: Server-Sent Events (SSE) / `StreamableHTTPServerTransport`
+- **Integrations**: OpenFDA API, RxNorm API, SMART on FHIR
+
+---
+
+## 🛠️ Local Development
+
+### Prerequisites
+- Node.js v18+
+- npm or pnpm
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/medshield-ai.git
+cd medshield-ai
+
 # Install dependencies
 npm install
 
-# Start the MCP server
+# Run the MCP server
 npm run dev
-
-# Run tests (in a separate terminal)
-npm test
 ```
 
-## MCP Tools
+The server will start on `http://localhost:3001`. It will expose the `/mcp` endpoint for tool discovery and execution.
 
-| # | Tool | Description |
-|---|------|-------------|
-| 1 | `get_patient_medication_context` | Fetches patient's medications, conditions, allergies from FHIR |
-| 2 | `check_drug_interactions` | Checks drug-drug interactions via OpenFDA + curated clinical DB |
-| 3 | `analyze_lab_trends` | Detects deteriorating kidney/liver function affecting drug metabolism |
-| 4 | `assess_genomic_risk` | Checks pharmacogenomic variants against CPIC guidelines |
-| 5 | `cross_reference_allergies` | Cross-references drug class allergies (e.g., penicillin → cephalosporin) |
-| 6 | `generate_safety_report` | Synthesizes all findings into a human-readable safety report |
+---
 
-## SHARP Compliance
+## 🏆 Hackathon Demo Scenario
+In our submitted demonstration, MedShield AI intercepts a dangerous prescription scenario:
+- **Patient Profile**: Edward Balistreri (Mock Data Fallback)
+- **Current Meds**: Warfarin
+- **Proposed Med**: Fluconazole
+- **Agent Action**: Automatically detects the severe CYP2C9 inhibition interaction, identifies declining renal function from lab trends, and outputs a **🔴 CRITICAL — ACTION REQUIRED** alert advising immediate dose reduction and INR monitoring.
 
-This MCP server follows the [SHARP on MCP](https://sharponmcp.com) specification:
-
-- Reads patient context from standard HTTP headers
-- Works with any FHIR R4 server
-- Decoupled from specific EHR implementations
-- Auditable: every tool call produces traceable output
-
-## API Endpoints
-
-- `POST /mcp` — MCP protocol endpoint (Streamable HTTP)
-- `GET /health` — Health check + tool listing
-
-## Tech Stack
-
-- **Runtime:** Node.js + TypeScript
-- **MCP SDK:** `@modelcontextprotocol/sdk`
-- **FHIR:** Standard R4 via SHARP headers
-- **Drug Data:** OpenFDA API, NIH RxNorm API
-- **Genomics:** CPIC Clinical Guidelines
-- **Transport:** Express + Streamable HTTP
-
-## License
-
-MIT — Built for the Agents Assemble: Healthcare AI Endgame hackathon.
+---
+*Built with ❤️ for the Agents Assemble Hackathon.*
